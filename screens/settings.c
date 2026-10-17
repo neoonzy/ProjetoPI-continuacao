@@ -1,130 +1,100 @@
-#include "raylib.h"
 #include "game.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-Button config, sound, music, back;
-Line sound_line, music_line, line = {(SCREEN_WIDTH)/2, (SCREEN_HEIGHT)/2, 300, RAYWHITE};
-Rectangle sound_rec, music_rec;
-int soundPressed = 0;
-int musicPressed = 0;
-FILE *sett_file;
-int sound_vol, music_vol;
+static Button config, sound, music;
+static Line sound_line, music_line;
+static Rectangle sound_rec, music_rec;
+static int soundPressed = 0, musicPressed = 0;
+static int sound_vol = 75, music_vol = 75;
+
+static int ClampPercent(int volume) {
+    return volume < 0 ? 0 : (volume > 100 ? 100 : volume);
+}
+
+static void ApplyVolumes(void) {
+    float effects = sound_vol / 100.0f;
+    float background_music = music_vol / 100.0f;
+    SetSoundVolume(botaoSound, effects);
+    SetSoundVolume(morteSound, effects);
+    SetSoundVolume(tiroSound, effects);
+    SetSoundVolume(freezeSound, effects);
+    SetSoundVolume(menuJogoSound, background_music);
+}
+
+static void UpdateSliders(void) {
+    sound_rec = (Rectangle){sound_line.x - 5 + sound_vol * 3, sound_line.y - 10, 10, 20};
+    music_rec = (Rectangle){music_line.x - 5 + music_vol * 3, music_line.y - 10, 10, 20};
+}
 
 void SetSettings(void) {
-    sett_file = fopen("txt_files/settings.txt", "r");
-    fscanf(sett_file, "%d", &sound_vol);
-    fscanf(sett_file, "%d", &music_vol);
-    fclose(sett_file);
+    FILE *file = fopen("txt_files/settings.txt", "r");
+    if (file) {
+        int sound_read, music_read;
+        if (fscanf(file, "%d %d", &sound_read, &music_read) == 2) {
+            sound_vol = ClampPercent(sound_read);
+            music_vol = ClampPercent(music_read);
+        }
+        fclose(file);
+    }
+    config = (Button){{rec.x - 30, rec.y - 240, rec.width, rec.height},
+                       "Configuracoes", BLACK, RAYWHITE};
+    sound = (Button){{rec.x, rec.y - 90, rec.width, rec.height}, "Som", BLACK, RAYWHITE};
+    music = (Button){{rec.x, rec.y + 60, rec.width, rec.height}, "Musica", BLACK, RAYWHITE};
+    sound_line = (Line){SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 40, 300, RAYWHITE};
+    music_line = (Line){SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 + 110, 300, RAYWHITE};
+    UpdateSliders();
+    ApplyVolumes();
+}
 
-    config.rec = (Rectangle) {rec.x - 30, rec.y - 240, rec.width, rec.height};
-    sound.rec  = (Rectangle) {rec.x, rec.y -  90, rec.width, rec.height};
-    music.rec  = (Rectangle) {rec.x, rec.y +  60, rec.width, rec.height};
-
-    strcpy(config.text, "Configurações");  config.text_color = RAYWHITE;
-    strcpy(sound.text, "Som");             sound.text_color = RAYWHITE;
-    strcpy(music.text, "Música");          music.text_color = RAYWHITE;
-
-    sound_line = (Line) {line.x - line.size/2, line.y -  40, line.size, line.color};
-    music_line = (Line) {line.x - line.size/2, line.y + 110, line.size, line.color};
-    sound_rec = (Rectangle) {line.x - 5 + (sound_vol - 50)*3, line.y -  40 - 10, 10, 20};
-    music_rec = (Rectangle) {line.x - 5 + (music_vol - 50)*3, line.y + 110 - 10, 10, 20};
-
-    SetSoundVolume(botaoSound, sound_vol/10);
-    SetSoundVolume(morteSound, sound_vol/10);
-    SetSoundVolume(tiroSound, sound_vol/10);
-    SetSoundVolume(menuJogoSound, music_vol/10);
+static void SaveSettings(void) {
+    FILE *file = fopen("txt_files/settings.txt", "w");
+    if (!file) {
+        fprintf(stderr, "Nao foi possivel salvar configuracoes.\n");
+        return;
+    }
+    fprintf(file, "%d\n%d\n", sound_vol, music_vol);
+    fclose(file);
 }
 
 void DrawSettings(void) {
-    SetSettings();
     ClearBackground(BLACK);
-    
     DrawTexturePro(background,
-    (Rectangle){ 0, 0, background.width, background.height },
-    (Rectangle){ 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT },
-    (Vector2){ 0, 0 },
-    0.0f,
-    WHITE);
-
-    DrawText(config.text, (SCREEN_WIDTH - 146*5)/2, config.rec.y + (config.rec.height - 100)/2, 100, config.text_color);
-    DrawText(sound.text,  (SCREEN_WIDTH - 18*5)/2, sound.rec.y + (sound.rec.height - font_size)/2, font_size, sound.text_color);
-    DrawText(music.text,  (SCREEN_WIDTH - 33*5)/2, music.rec.y + (music.rec.height - font_size)/2, font_size, music.text_color);
-    DrawText(back.text,   (SCREEN_WIDTH - 33*5)/2, back.rec.y  + (back.rec.height - font_size)/2, font_size, back.text_color);
-    
-    DrawLine(sound_line.x, sound_line.y, sound_line.x + sound_line.size, sound_line.y, sound_line.color);
-    DrawLine(music_line.x, music_line.y, music_line.x + music_line.size, music_line.y, music_line.color);
-    DrawRectangle(sound_rec.x, sound_rec.y, sound_rec.width, sound_rec.height, WHITE);
-    DrawRectangle(music_rec.x, music_rec.y, music_rec.width, music_rec.height, WHITE);
-
-    // back
-    if (CheckCollisionPointRec(GetMousePosition(), back.rec)) {
-        DrawText(back.text, (SCREEN_WIDTH - 33*5)/2, back.rec.y  + (back.rec.height - font_size)/2, font_size, GRAY);
-    }
-    // sound
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), sound_rec)) soundPressed = 1;
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) soundPressed = 0;
-
-    if (soundPressed && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        sett_file = fopen("txt_files/settings.txt", "w");
-
-        DrawRectangle(sound_rec.x, sound_rec.y, sound_rec.width, sound_rec.height, BLACK);
-        DrawLine(sound_line.x, sound_line.y, sound_line.x + sound_line.size, sound_line.y, sound_line.color);
-
-        if (GetMouseX() < sound_line.x) {
-            fprintf(sett_file, "%d\n", 0);
-            sound_rec.x = sound_line.x;
-            DrawRectangle(sound_rec.x, sound_rec.y, sound_rec.width, sound_rec.height, WHITE);
-        } else
-        if (GetMouseX() > sound_line.x + sound_line.size) {
-            fprintf(sett_file, "%d\n", 100);
-            sound_rec.x = sound_line.x + sound_line.size;
-            DrawRectangle(sound_rec.x, sound_rec.y, sound_rec.width, sound_rec.height, WHITE);
-        } else {
-            fprintf(sett_file, "%d\n", (int) (GetMouseX() - sound_line.x)/3);
-            sound_rec.x = GetMouseX() - sound_rec.width/2;
-            DrawRectangle(sound_rec.x, sound_rec.y, sound_rec.width, sound_rec.height, WHITE);
-        }
-        fprintf(sett_file, "%d\n", music_vol);
-        fclose(sett_file);
-    }
-    // music
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), music_rec)) musicPressed = 1;
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) musicPressed = 0;
-
-    if (musicPressed && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        sett_file = fopen("txt_files/settings.txt", "w");
-        fprintf(sett_file, "%d\n", sound_vol);
-
-        DrawRectangle(music_rec.x, music_rec.y, music_rec.width, music_rec.height, BLACK);
-        DrawLine(music_line.x, music_line.y, music_line.x + music_line.size, music_line.y, music_line.color);
-
-        if (GetMouseX() < music_line.x) {
-            fprintf(sett_file, "%d\n", 0);
-            music_rec.x = music_line.x;
-            DrawRectangle(music_rec.x, music_rec.y, music_rec.width, music_rec.height, WHITE);
-        } else
-        if (GetMouseX() > music_line.x + music_line.size) {
-            fprintf(sett_file, "%d\n", 100);
-            music_rec.x = music_line.x + music_line.size;
-            DrawRectangle(music_rec.x, music_rec.y, music_rec.width, music_rec.height, WHITE);
-        } else {
-            fprintf(sett_file, "%d\n", (int) (GetMouseX() - music_line.x)/3);
-            music_rec.x = GetMouseX() - music_rec.width/2;
-            DrawRectangle(music_rec.x, music_rec.y, music_rec.width, music_rec.height, WHITE);
-        }
-        fclose(sett_file);
-    }
+                   (Rectangle){0, 0, background.width, background.height},
+                   (Rectangle){0, 0, SCREEN_WIDTH, SCREEN_HEIGHT}, (Vector2){0, 0}, 0, WHITE);
+    DrawText(config.text, 280, 130, 80, RAYWHITE);
+    DrawText(sound.text, SCREEN_WIDTH/2 - 55, sound.rec.y, font_size, RAYWHITE);
+    DrawText(music.text, SCREEN_WIDTH/2 - 75, music.rec.y, font_size, RAYWHITE);
+    DrawLine((int)sound_line.x, (int)sound_line.y, (int)(sound_line.x + sound_line.size), (int)sound_line.y, RAYWHITE);
+    DrawLine((int)music_line.x, (int)music_line.y, (int)(music_line.x + music_line.size), (int)music_line.y, RAYWHITE);
+    DrawRectangleRec(sound_rec, WHITE);
+    DrawRectangleRec(music_rec, WHITE);
+    DrawText(TextFormat("%d%%", sound_vol), (int)(sound_line.x + sound_line.size + 20), (int)sound_line.y - 10, 20, WHITE);
+    DrawText(TextFormat("%d%%", music_vol), (int)(music_line.x + music_line.size + 20), (int)music_line.y - 10, 20, WHITE);
+    DrawText(back.text, (int)back.rec.x, (int)back.rec.y, font_size,
+             CheckCollisionPointRec(GetMousePosition(), back.rec) ? GRAY : RAYWHITE);
 }
 
 void UpdateSettings(void) {
-    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), back.rec)) {
-        PlaySound(botaoSound); // Toca o som de botão
-        if (paused) {
-            currentScreen = PAUSE;
-        } else {
-            currentScreen = MENU;
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        Vector2 mouse = GetMousePosition();
+        if (CheckCollisionPointRec(mouse, (Rectangle){sound_line.x - 10, sound_line.y - 15, 320, 30})) soundPressed = 1;
+        else if (CheckCollisionPointRec(mouse, (Rectangle){music_line.x - 10, music_line.y - 15, 320, 30})) musicPressed = 1;
+    }
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (soundPressed) sound_vol = ClampPercent((int)((GetMouseX() - sound_line.x)/3.0f + 0.5f));
+        if (musicPressed) music_vol = ClampPercent((int)((GetMouseX() - music_line.x)/3.0f + 0.5f));
+        if (soundPressed || musicPressed) {
+            UpdateSliders();
+            ApplyVolumes();
+        }
+    }
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        if (soundPressed || musicPressed) SaveSettings();
+        soundPressed = musicPressed = 0;
+        if (CheckCollisionPointRec(GetMousePosition(), back.rec)) {
+            PlaySound(botaoSound);
+            currentScreen = paused ? PAUSE : MENU;
         }
     }
 }

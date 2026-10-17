@@ -1,0 +1,29 @@
+name: Build and checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config cmake git libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libxcursor-dev libxinerama-dev
+      - name: Build raylib
+        run: |
+          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git /tmp/raylib
+          cmake -S /tmp/raylib -B /tmp/raylib/build -DBUILD_EXAMPLES=OFF -DBUILD_GAMES=OFF
+          cmake --build /tmp/raylib/build --parallel 2
+          sudo cmake --install /tmp/raylib/build
+          sudo ldconfig
+      - name: Compile CInType
+        run: make
+      - name: Run regression tests
+        run: |
+          python3 -m unittest discover -s tests -v
+          gcc -std=c99 -I. tests/test_reset.c mecanics/lives.c -o /tmp/test_reset $(pkg-config --cflags --libs raylib) -lm
+          /tmp/test_reset

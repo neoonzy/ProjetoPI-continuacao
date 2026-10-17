@@ -25,12 +25,12 @@ typedef struct Enemy {
     float delay_speed;
     int texture_index;
     float angle;
-
+    unsigned int id;
 } Enemy;
 
 typedef struct Projectile {
     Vector2 center;
-    Enemy target;
+    unsigned int target_id;
     float speed;
     float radius;
 } Projectile;
@@ -85,6 +85,16 @@ typedef struct Score {
     int points;
 } Score;
 
+typedef struct GameState {
+    Player player;
+    EnemyList enemy_list;
+    ProjectileList projectile_list;
+    Power_up_list power_up_list;
+    Score score;
+    double time_pass;
+    int freeze;
+} GameState;
+
 typedef enum StateTyping {NOTLOCKED = 0, LOCKONENEMY = 1} StateTyping;
 
 extern GameScreen currentScreen;
@@ -105,12 +115,12 @@ extern Texture2D background;
 extern Texture2D background_menu;
 extern Texture2D heart;
 
-// screens
-int paused;
-int font_size = 50;
-Rectangle rec = {(SCREEN_WIDTH - 400)/2, (SCREEN_HEIGHT - 80)/2, 400, 80};
-Button back = {{(SCREEN_WIDTH - 33*5)/2, SCREEN_HEIGHT/2 + 250, 33*5, 50}, "Voltar", BLACK, RAYWHITE};
-Button back_menu = {{(SCREEN_WIDTH - 400)/2, (SCREEN_HEIGHT)/2 + 180, 400, 80}, "Menu", RAYWHITE, BLACK};
+// Interface shared across screens; definitions live in main.c.
+extern int paused;
+extern int font_size;
+extern Rectangle rec;
+extern Button back;
+extern Button back_menu;
 
 // game.c
 void DrawGame(Player* player, EnemyList* enemy_list, ProjectileList* projectile_list, Font myfont,Power_up_list power_up_list, Score* score);
@@ -119,11 +129,12 @@ void UpdateGameplay(Player* player, EnemyList* enemy_list, ProjectileList* proje
 // enemy.c
 void InitTexts(void);
 void UnloadEnemyTextures(void);
+void ResetEnemyWaves(void);
 void DrawEnemies(EnemyList* enemy_list, Font myfont, Texture2D enemyTextures[]);
 void SpawnEnemy(EnemyList* enemy_list);
 void UpdateEnemyWaves(EnemyList* enemy_list);
 void MoveEnemies(EnemyList* enemy_list, Player* player, int* freeze, double* time_pass, Power_up_list* power_up_list, Score* score);
-void RemoveEnemy(EnemyList* enemy_list, int index_enemy, Score* score);
+void RemoveEnemy(EnemyList* enemy_list, int index_enemy, Score* score, bool award_points);
 void DelayEnemies(EnemyList* enemy_list);
 
 // menu.c
@@ -144,18 +155,19 @@ void UpdateCredits(void);
 // pause.c
 void SetPause(void);
 void DrawPause(void);
-void UpdatePause(Player *player, EnemyList *enemy_list, ProjectileList *projectile_list);
+void UpdatePause(GameState *game);
 
 // game_over.c
 void SetGameOver(void);
 void DrawGameOver(void);
-void UpdateGameOver(void);
+void UpdateGameOver(GameState *game);
 
 // history.c
 void DrawHistory(Texture2D background, Font myfont);
 void UpdateHistory(void);
 
 // player.c
+void InitPlayerResources(void);
 void CreatePlayer(Player* player);
 void DrawPlayer(Player* player);
 void TurnToEnemy(Player* player, EnemyList* enemy_list);
@@ -175,7 +187,8 @@ void Power_up_delet(EnemyList* enemyList, int number_enemies, Score* score); // 
 void Adicionar_power_up(int type, Power_up_list* power_up_list); // adiciona o power up a lista
 void print_power_up_bar(Power_up_list power_up_list); // printa a barra com os power ups
 void activate_power_up(Power_up_list* power_up_list, EnemyList* enemyList, double *time_pass, int* freeze, Score* score); // ativa o power up da barra
-void Inicializar_power_up_list(Power_up_list* lista); // inicializa a lista de power ups zerada
+void Inicializar_power_up_list(Power_up_list* lista);
+void UnloadPowerUpTextures(void); // inicializa a lista de power ups zerada
 
 // lives.c
 void InitLives(Player* player);
@@ -183,29 +196,11 @@ void LoseLife(Player* player);
 void UpdateInvincibility(Player* player);
 bool IsPlayerInvincible(Player* player);
 void DrawLives(Player* player);
-void DrawGameOver(void);
-void UpdateGameOver(void);
-void ResetGame(Player* player, EnemyList* enemy_list, ProjectileList* projectile_list);
+void ResetGame(GameState* game);
 
 // score.c
 void DrawScore(Score* score, Font font);
 void IncreaseScore(Score* score);
 void InitScore(Score* score);
 
-#include "screens/game.c"
-#include "screens/menu.c"
-#include "screens/settings.c"
-#include "screens/credits.c"
-#include "screens/history.c"
-#include "screens/pause.c"
-#include "screens/game_over.c"
-
-#include "entities/enemy.c"
-#include "entities/player.c"
-#include "entities/projectile.c"
-#include "entities/power_up.c"
-
-#include "mecanics/lives.c"
-#include "mecanics/typing.c"
-#include "mecanics/score.c"
 #endif

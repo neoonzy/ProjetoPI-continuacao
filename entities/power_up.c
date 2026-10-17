@@ -15,13 +15,8 @@ void Power_up_time(EnemyList* enemyList, double time_pass, float normal_speed, i
         *freeze = 0;
     }
 
-    if(*freeze == 0){
-        for (int i = 0; i < enemyList->qty_enemies; i++){
-            enemyList->enemies[i].speed = normal_speed; // faz com que os inimigos voltem a velocidade normal antes de aceleração
-        }
-    }
-
-    else { // o tempo de congelamento aida não acabou
+    (void)normal_speed;
+    if (*freeze) { // o tempo de congelamento aida não acabou
         for (int i = 0; i < enemyList->qty_enemies; i++){ // percorre todos os enimigos e zera a velocidade deles
             enemyList->enemies[i].speed = 0;
         }
@@ -32,18 +27,22 @@ void Power_up_time(EnemyList* enemyList, double time_pass, float normal_speed, i
 void Power_up_delet(EnemyList* enemyList, int number_enemies, Score* score) { // mata uma quantidade de inimigos
 
     for (int i = 0; i < number_enemies; i++){
-        if (enemyList->qty_enemies > 0) RemoveEnemy(enemyList, 0, score);  
+        if (enemyList->qty_enemies > 0) RemoveEnemy(enemyList, 0, score, true);  
     }
 
 }
 
+void UnloadPowerUpTextures(void) {
+    UnloadTexture(freeze_time);
+    UnloadTexture(bomb);
+}
 void Inicializar_power_up_list(Power_up_list* lista){
     int max = 3;
     lista->max_power_up = max;
     lista->number_power_ups = 0;
 
-    freeze_time = LoadTexture("sprites\\clock.png");
-    bomb = LoadTexture("sprites\\explode.png");
+    freeze_time = LoadTexture("sprites/clock.png");
+    bomb = LoadTexture("sprites/explode.png");
 
     for (int i = 0; i < max; i++){
         lista->power_up[i].type = 0;
