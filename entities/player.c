@@ -6,22 +6,23 @@ float angle_enemy = 0.0f;
 Texture2D nave;
 Texture2D mira;
 
+void InitPlayerResources(void) {
+    nave = LoadTexture("sprites/nave.png");
+    mira = LoadTexture("sprites/mira.png");
+}
 void CreatePlayer(Player* player) {
     float scale = 2.0f; // aumenta o tamanho da sprite (1.5x)
     float spriteSize = 200.0f * scale;
 
     player->rect = (Rectangle) {
         SCREEN_WIDTH / 2 - spriteSize / 2,
-        650 - spriteSize / 2
+        650 - spriteSize / 2,
         spriteSize,            // largura
         spriteSize             // altura
     };
     
     player->angle = 0;
     player->color = YELLOW;
-    nave = LoadTexture("sprites/nave.png");
-    mira = LoadTexture("sprites/mira.png");
-
     InitLives(player);  // Inicializa o sistema de vidas
 }
 
@@ -42,7 +43,7 @@ void DrawPlayer(Player* player) {
         }
     }
 
-    if (abs(angle_enemy - player->angle) > 6) {
+    if (fabsf(angle_enemy - player->angle) > 6.0f) {
         if (angle_enemy < player->angle) {
             player->angle -= 6.0f;
         } else if (angle_enemy > player->angle) {
