@@ -1,7 +1,7 @@
 #include "raylib.h"
 #include "game.h"
 
-Button game_over, restart;
+Button game_over, restart, back_menu;
 
 void SetGameOver(void) {
     game_over = (Button) {{rec.x - 30, rec.y - 240, rec.width, rec.height}, "Game Over", BLACK, RED};
@@ -10,6 +10,7 @@ void SetGameOver(void) {
 
 void DrawGameOver(void) {
     SetGameOver();
+    Texture2D background = LoadTexture("sprites/background.png");
     ClearBackground(BLACK);    
     DrawTexturePro(
         background,
@@ -37,15 +38,13 @@ void DrawGameOver(void) {
     }
 }
 
-void UpdateGameOver(GameState* game) {
+void UpdateGameOver(void) {
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), restart.rec)) {
         PlaySound(botaoSound); // Toca o som de botão
-        ResetGame(game);
         currentScreen = GAMEPLAY;
     }
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), back_menu.rec)) {
         PlaySound(botaoSound); // Toca o som de botão
-        ResetGame(game);
         currentScreen = MENU;
     }
 }

@@ -2,9 +2,11 @@
 #include "raylib.h"
 #include "game.h"
 
+Texture2D heart;
 
 // Inicializa o sistema de vidas para o player
 void InitLives(Player* player) {
+    heart = LoadTexture("sprites/heart.png");
     player->lives = 3;       // Inicializa com 3 vidas
     player->invincible = 0;  // Não está invencível no início
 }
@@ -47,17 +49,27 @@ void DrawLives(Player* player) {
     DrawText(TextFormat("VIDAS: %d", player->lives), SCREEN_WIDTH - 150, 20, 30, WHITE);
 }
 
-// Reset only on restart or return to menu.
-void ResetGame(GameState* game) {
-    CreatePlayer(&game->player);
-    game->enemy_list.qty_enemies = 0;
-    game->projectile_list.qty_projectiles = 0;
-    game->power_up_list.number_power_ups = 0;
-    for (int i = 0; i < game->power_up_list.max_power_up; i++) game->power_up_list.power_up[i].type = 0;
-    game->freeze = 0;
-    game->time_pass = 0.0;
-    InitScore(&game->score);
-    ResetEnemyWaves();
+// Reinicia o jogo após Game Over
+void ResetGame(Player* player, EnemyList* enemy_list, ProjectileList* projectile_list) {
+    // Reinicia o jogador
+    CreatePlayer(player);
+    
+    // Limpa os inimigos
+    for (int i = 0; i < 20; i++) {
+        enemy_list->enemies[i].health = -1;
+    }
+    enemy_list->qty_enemies = 0;
+    
+    // Limpa os projéteis
+    for (int i = 0; i < 50; i++) {
+        projectile_list->projectiles[i].speed = 0;
+    }
+    projectile_list->qty_projectiles = 0;
+    
+    // Reinicia o estado de digitação
     state = NOTLOCKED;
-    paused = 0;
+    current_wave = 1;
+    wave_clear = false;
+    score.points = 0;
+    enemies_spawned_this_wave = 0;
 }

@@ -25,12 +25,12 @@ typedef struct Enemy {
     float delay_speed;
     int texture_index;
     float angle;
-
+    unsigned int id;
 } Enemy;
 
 typedef struct Projectile {
     Vector2 center;
-    Enemy target;
+    unsigned int target_id;
     float speed;
     float radius;
 } Projectile;

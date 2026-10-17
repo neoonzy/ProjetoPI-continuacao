@@ -32,14 +32,16 @@ void UpdateGameplay(Player* player, EnemyList* enemy_list, ProjectileList* proje
     }
     if (IsKeyPressed(KEY_ZERO)) {
         currentScreen = PAUSE;
+        return;
     }
     
 
     UpdateInvincibility(player);
     UpdateEnemyWaves(enemy_list);
-    MoveEnemies(enemy_list, player, freeze, time_pass, power_up_list, score);
-    UpdateProjectile(projectile_list, enemy_list);
     DelayEnemies(enemy_list);
+    MoveEnemies(enemy_list, player, freeze, time_pass, power_up_list, score);
+    if (currentScreen == GAME_OVER) return;
+    UpdateProjectile(projectile_list, enemy_list);
     if (projectile_list->qty_projectiles == 0) {
         activate_power_up(power_up_list, enemy_list, time_pass, freeze, score);
     }

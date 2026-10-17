@@ -1,7 +1,7 @@
 #include "raylib.h"
 #include "game.h"
 
-Button pause, resume, settings;
+Button pause, resume, settings, back_menu;
 
 void SetPause(void) {
     pause =     (Button) {{rec.x - 30, rec.y - 240, rec.width, rec.height}, "Pausado",  BLACK, RAYWHITE};
@@ -45,7 +45,7 @@ void DrawPause(void) {
     }
 }
 
-void UpdatePause(GameState *game) {
+void UpdatePause(Player *player, EnemyList *enemy_list, ProjectileList *projectile_list) {
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), resume.rec)) {
         PlaySound(botaoSound); // Toca o som de botão
         currentScreen = GAMEPLAY;
@@ -57,7 +57,7 @@ void UpdatePause(GameState *game) {
         paused = 1;
     }
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && CheckCollisionPointRec(GetMousePosition(), back_menu.rec)) {
-        ResetGame(game);
+        ResetGame(player, enemy_list, projectile_list);
         PlaySound(botaoSound); // Toca o som de botão
         currentScreen = MENU;
         paused = 0;
