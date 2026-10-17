@@ -196,8 +196,6 @@ void LoseLife(Player* player);
 void UpdateInvincibility(Player* player);
 bool IsPlayerInvincible(Player* player);
 void DrawLives(Player* player);
-void DrawGameOver(void);
-void UpdateGameOver(void);
 void ResetGame(GameState* game);
 
 // score.c
