@@ -22,5 +22,8 @@ jobs:
           sudo ldconfig
       - name: Compile CInType
         run: make
-      - name: Run unit checks
-        run: python3 -m unittest discover -s tests -v
+      - name: Run regression tests
+        run: |
+          python3 -m unittest discover -s tests -v
+          gcc -std=c99 -I. tests/test_reset.c mecanics/lives.c -o /tmp/test_reset $(pkg-config --cflags --libs raylib) -lm
+          /tmp/test_reset

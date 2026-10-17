@@ -51,6 +51,8 @@ O executável deve ser iniciado na **raiz do repositório** para que encontre os
 make BUILD_MODE=DEBUG
 make clean
 python3 -m unittest discover -s tests -v
+gcc -std=c99 -I. tests/test_reset.c mecanics/lives.c -o test_reset $(pkg-config --cflags --libs raylib) -lm
+./test_reset
 ```
 
 As verificações automatizadas incluem testes estáticos e uma compilação em CI. Testes de jogabilidade e de áudio também devem ser feitos manualmente.
