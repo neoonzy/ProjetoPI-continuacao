@@ -1,0 +1,11 @@
+# Generated binaries and objects
+*.o
+*.obj
+*.exe
+/cintype
+/game
+*.out
+*.log
+/build/
+.vscode/ipch/
+.DS_Store

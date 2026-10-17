@@ -144,6 +144,7 @@ void UpdateEnemyWaves(EnemyList* list) {
 
 void RemoveEnemy(EnemyList* list, int index, Score* score, bool award_points) {
     if (index < 0 || index >= list->qty_enemies) return;
+    if (list->enemies[index].locked) state = NOTLOCKED;
     if (award_points) {
         IncreaseScore(score);
         PlaySound(morteSound);
@@ -168,8 +169,8 @@ void MoveEnemies(EnemyList* list, Player* player, int* freeze, double* time_pass
             continue;
         }
         Vector2 center = {enemy->rect.x + enemy->rect.width/2, enemy->rect.y + enemy->rect.height/2};
-        float dx = player->rect.x - center.x;
-        float dy = player->rect.y - center.y;
+        float dx = player->rect.x + player->rect.width/2 - center.x;
+        float dy = player->rect.y + player->rect.height/2 - center.y;
         float distance = sqrtf(dx * dx + dy * dy);
         if (CheckCollisionRecs(player->rect, enemy->rect)) {
             if (enemy->locked) state = NOTLOCKED;

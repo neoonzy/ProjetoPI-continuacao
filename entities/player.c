@@ -11,8 +11,8 @@ void CreatePlayer(Player* player) {
     float spriteSize = 200.0f * scale;
 
     player->rect = (Rectangle) {
-        1280 / 2,              // posição x centralizada
-        650,                   // posição y mais alta que antes (era 600)
+        SCREEN_WIDTH / 2 - spriteSize / 2,
+        650 - spriteSize / 2
         spriteSize,            // largura
         spriteSize             // altura
     };
@@ -32,6 +32,8 @@ void UnloadPlayer() {
 
 void DrawPlayer(Player* player) {
     Vector2 center = {player->rect.width / 2, player->rect.height / 2};
+    Rectangle dest = {player->rect.x + center.x, player->rect.y + center.y,
+                      player->rect.width, player->rect.height};
 
     if (IsPlayerInvincible(player)) {
         // Faz o jogador piscar quando está invencível
@@ -52,18 +54,19 @@ void DrawPlayer(Player* player) {
 
     // desenha a nave estática atrás
     DrawTexturePro(nave, (Rectangle){0, 0, nave.width, nave.height},
-                         player->rect, center, 0.0f, WHITE);
+                         dest, center, 0.0f, WHITE);
 
     // desenha a mira rotacionada por cima
     DrawTexturePro(mira, (Rectangle){0, 0, mira.width, mira.height},
-                         player->rect, center, player->angle, WHITE);
+                         dest, center, player->angle, WHITE);
 }
 
 void TurnToEnemy(Player* player, EnemyList* enemy_list) {
     for (int i = 0; i < enemy_list->qty_enemies; i++) {
         Enemy enemy = enemy_list->enemies[i];
         Vector2 enemy_center = {enemy.rect.x + enemy.rect.width / 2, enemy.rect.y + enemy.rect.height / 2};
-        Vector2 player_center = {player->rect.x, player->rect.y};
+        Vector2 player_center = {player->rect.x + player->rect.width/2,
+                                 player->rect.y + player->rect.height/2};
 
         if (enemy.locked) {
             float dx = player_center.x - enemy_center.x;
