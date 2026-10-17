@@ -18,7 +18,6 @@ int enemies_spawned_this_wave = 0;
 int current_wave = 1;
 bool wave_clear = false;
 
-Texture2D enemy_textures[3];
 
 void InitTexts(void) {
     FILE *fileshort = fopen("txt_files/shortwords.txt", "r");

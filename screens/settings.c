@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-Button config, sound, music, back;
+Button config, sound, music;
 Line sound_line, music_line, line = {(SCREEN_WIDTH)/2, (SCREEN_HEIGHT)/2, 300, RAYWHITE};
 Rectangle sound_rec, music_rec;
 int soundPressed = 0;
